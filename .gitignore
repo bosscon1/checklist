@@ -1,4 +1,6 @@
 public/
+.publish-staging/
+checklist-publish.zip
 node_modules/
 .vercel/
 .nitro/

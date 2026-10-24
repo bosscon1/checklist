@@ -3,6 +3,8 @@
   "private": true,
   "description": "Checklist for brianselleck.com — SiteGround deploy uses deploy/siteground via npm run build",
   "scripts": {
-    "build": "node scripts/siteground-build.mjs"
+    "build": "node scripts/siteground-build.mjs",
+    "publish:zip": "node scripts/build-publish-zip.mjs",
+    "dev": "npm run dev --prefix web"
   }
 }
