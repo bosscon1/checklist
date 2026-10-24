@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1c1f24" />
+    <meta name="apple-mobile-web-app-title" content="Checklist" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Checklist</title>
+    <link rel="manifest" href="/checklist/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/checklist/icon-180.png" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --ink: #1c1f24;
+        --cream: #f4f0e6;
+        --paper: #fff;
+        --muted: #5c6370;
+        --line: #d8d4cb;
+        --pfeifer: #004aad;
+        --danger: #8b1e1e;
+        --font-display: "Outfit", "Segoe UI", sans-serif;
+        --font-sans: "DM Sans", "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-sans); background: var(--cream); color: var(--ink); -webkit-font-smoothing: antialiased; }
+      button, input { font: inherit; touch-action: manipulation; }
+      button:not(:disabled), [role="button"] { cursor: pointer; }
+      .app { max-width: 32rem; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; background: var(--cream); }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+      h1 { font-family: var(--font-display); font-size: 1.875rem; margin: 0; letter-spacing: -0.03em; }
+      .muted { color: var(--muted); }
+      .header { display: flex; justify-content: space-between; align-items: flex-end; gap: 0.75rem; padding: max(1rem, env(safe-area-inset-top)) 1rem 0; }
+      .lock { min-height: 3.5rem; padding: 0 0.5rem; border: 0; background: none; font-weight: 600; color: var(--muted); }
+      .alert { margin: 0.75rem 1rem; padding: 0.75rem; border: 1px solid var(--danger); color: var(--danger); border-radius: 0.25rem; }
+      .hint { margin: 1rem; padding: 0.75rem 1rem; border: 1px solid var(--line); background: var(--paper); border-radius: 0.25rem; }
+      .hint h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+      .list { list-style: none; margin: 0.5rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+      .list li { display: flex; align-items: stretch; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+      .check { width: 4rem; height: 4rem; flex-shrink: 0; border-radius: 0.25rem; border: 2px solid var(--ink); background: var(--paper); }
+      .check.done { border-color: var(--pfeifer); background: var(--pfeifer); color: var(--paper); }
+      .item-text { flex: 1; min-height: 4rem; text-align: left; border: 0; background: none; padding: 0.25rem; font-size: 1.125rem; }
+      .item-text.done { color: var(--muted); text-decoration: line-through; }
+      .dismiss { min-height: 4rem; border: 0; background: none; color: var(--danger); font-weight: 600; padding: 0 0.5rem; }
+      .scroll { flex: 1; overflow-y: auto; padding: 0 1rem 1rem; }
+      .add-bar { display: flex; gap: 0.5rem; border-top: 1px solid var(--line); background: var(--paper); padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom)); }
+      .add-bar input { flex: 1; min-height: 4rem; border: 1px solid var(--line); border-radius: 0.25rem; padding: 0 1rem; font-size: 1.125rem; }
+      .primary { min-height: 4rem; border: 0; border-radius: 0.25rem; background: var(--pfeifer); color: var(--paper); font-weight: 600; padding: 0 1.25rem; font-size: 1.125rem; }
+      .primary:disabled { opacity: 0.4; }
+      .gate { padding: 2rem 1rem; }
+      .gate input { width: 100%; min-height: 4rem; border: 1px solid var(--line); border-radius: 0.25rem; padding: 0 1rem; margin-top: 0.5rem; }
+      .gate label { font-weight: 600; display: block; margin-top: 1rem; }
+      details summary { min-height: 3.5rem; padding: 0.75rem 0; font-weight: 600; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="app"></div>
+    <script>
+      const OWNER_KEY = "checklist-owner-key";
+      const rank = { open: 0, done: 1, dismissed: 2 };
+      const sortItems = (items) =>
+        [...items].sort((a, b) => rank[a.status] - rank[b.status] || a.createdAt.localeCompare(b.createdAt));
+
+      function el(tag, props, ...children) {
+        const node = document.createElement(tag);
+        if (props) {
+          for (const [k, v] of Object.entries(props)) {
+            if (k === "className") node.className = v;
+            else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
+            else if (k === "htmlFor") node.htmlFor = v;
+            else if (v != null) node.setAttribute(k, v);
+          }
+        }
+        for (const child of children.flat()) {
+          if (child == null) continue;
+          node.append(typeof child === "string" ? document.createTextNode(child) : child);
+        }
+        return node;
+      }
+
+      async function api(ownerKey, path, init = {}) {
+        const res = await fetch(path, {
+          ...init,
+          headers: {
+            authorization: "Bearer " + ownerKey,
+            "content-type": "application/json",
+            ...(init.headers || {}),
+          },
+        });
+        const body = await res.json().catch(() => ({}));
+        return { res, body };
+      }
+
+      function renderGate(root) {
+        root.replaceChildren();
+        const input = el("input", { type: "password", id: "key", autocomplete: "current-password" });
+        const err = el("p", { className: "alert", style: "display:none", role: "alert" });
+        const form = el(
+          "form",
+          {
+            className: "gate",
+            onSubmit: (e) => {
+              e.preventDefault();
+              const v = input.value.trim();
+              if (!v) {
+                err.textContent = "Enter the owner key.";
+                err.style.display = "block";
+                return;
+              }
+              localStorage.setItem(OWNER_KEY, v);
+              renderApp(root, v);
+            },
+          },
+          el("h1", null, "Checklist"),
+          el("p", { className: "muted" }, "Enter the owner key once. It stays on this phone."),
+          el("label", { htmlFor: "key" }, "Owner key", input),
+          err,
+          el("button", { type: "submit", className: "primary", style: "width:100%;margin-top:1rem" }, "Open checklist"),
+        );
+        root.append(form);
+      }
+
+      function renderApp(root, ownerKey) {
+        let items = [];
+        let loaded = false;
+        let error = "";
+        let draft = "";
+        const inflight = new Set();
+
+        const mount = () => {
+          root.replaceChildren();
+          const open = items.filter((i) => i.status === "open");
+          const done = items.filter((i) => i.status === "done");
+          const dismissed = items.filter((i) => i.status === "dismissed");
+
+          const header = el(
+            "header",
+            { className: "header" },
+            el("div", null, el("h1", null, "Checklist"), el("p", { className: "muted" }, loaded ? open.length + " open" : "Loading")),
+            el(
+              "button",
+              {
+                type: "button",
+                className: "lock",
+                onClick: () => {
+                  localStorage.removeItem(OWNER_KEY);
+                  renderGate(root);
+                },
+              },
+              "Lock",
+            ),
+          );
+
+          const scroll = el("div", { className: "scroll" });
+          if (error) scroll.append(el("p", { className: "alert", role: "alert" }, error));
+          scroll.append(
+            el(
+              "section",
+              { className: "hint" },
+              el("h2", null, "Keep it on your home screen"),
+              el("p", { className: "muted" }, "Use your browser menu → Add to Home Screen."),
+            ),
+          );
+          if (loaded && open.length === 0) scroll.append(el("p", { className: "muted", style: "margin-top:1.5rem" }, "Nothing open. Add one below, or wait for your bot."));
+          scroll.append(itemList(open, setStatus));
+          if (done.length) scroll.append(el("h2", { style: "font-family:var(--font-display);margin-top:2rem" }, "Done"), itemList(done, setStatus));
+          if (dismissed.length) {
+            const det = el("details", { style: "margin-top:2rem" });
+            det.append(el("summary", null, "Dismissed (" + dismissed.length + ")"));
+            const ul = el("ul", { className: "list" });
+            for (const item of dismissed) {
+              ul.append(
+                el(
+                  "li",
+                  null,
+                  el("p", { className: "item-text done", style: "flex:1" }, item.text),
+                  el("button", { type: "button", className: "dismiss", style: "color:var(--pfeifer)", onClick: () => setStatus(item, "open") }, "Restore"),
+                ),
+              );
+            }
+            det.append(ul);
+            scroll.append(det);
+          }
+
+          const addInput = el("input", { id: "new", placeholder: "Add an item", maxlength: "280" });
+          addInput.value = draft;
+          addInput.addEventListener("input", () => (draft = addInput.value));
+          const addForm = el(
+            "form",
+            {
+              className: "add-bar",
+              onSubmit: (e) => {
+                e.preventDefault();
+                void addItem(addInput);
+              },
+            },
+            addInput,
+            el("button", { type: "submit", className: "primary", disabled: draft.trim() ? null : "" }, "Add"),
+          );
+
+          root.append(header, scroll, addForm);
+        };
+
+        function itemList(list, onStatus) {
+          const ul = el("ul", { className: "list" });
+          for (const item of list) {
+            const isDone = item.status === "done";
+            ul.append(
+              el(
+                "li",
+                null,
+                el(
+                  "button",
+                  {
+                    type: "button",
+                    className: "check" + (isDone ? " done" : ""),
+                    "aria-pressed": isDone ? "true" : "false",
+                    onClick: () => onStatus(item, isDone ? "open" : "done"),
+                  },
+                  isDone ? "✓" : "",
+                ),
+                el(
+                  "button",
+                  { type: "button", className: "item-text" + (isDone ? " done" : ""), onClick: () => onStatus(item, isDone ? "open" : "done") },
+                  item.text,
+                  item.source === "bot" ? el("span", { className: "muted", style: "display:block;font-size:0.875rem;margin-top:0.25rem" }, isDone && item.statusSource === "bot" ? "Checked by your bot" : "From your bot") : "",
+                ),
+                item.status !== "dismissed"
+                  ? el("button", { type: "button", className: "dismiss", onClick: () => onStatus(item, "dismissed") }, "Dismiss")
+                  : "",
+              ),
+            );
+          }
+          return ul;
+        }
+
+        async function refresh(quiet) {
+          const { res, body } = await api(ownerKey, "/api/checklist/");
+          if (res.status === 401) {
+            localStorage.removeItem(OWNER_KEY);
+            renderGate(root);
+            return;
+          }
+          if (!res.ok || !Array.isArray(body.items)) {
+            if (!quiet) error = body.error || "Couldn't load the list.";
+            loaded = true;
+            mount();
+            return;
+          }
+          items = sortItems(body.items);
+          loaded = true;
+          error = "";
+          mount();
+        }
+
+        async function setStatus(item, status) {
+          const prev = item;
+          items = sortItems(items.map((i) => (i.id === item.id ? { ...i, status, statusSource: "user" } : i)));
+          mount();
+          inflight.add(item.id);
+          const { res, body } = await api(ownerKey, "/api/checklist/" + encodeURIComponent(item.id) + "/", {
+            method: "PATCH",
+            body: JSON.stringify({ status }),
+          });
+          inflight.delete(item.id);
+          if (res.status === 401) {
+            localStorage.removeItem(OWNER_KEY);
+            renderGate(root);
+            return;
+          }
+          if (!res.ok || !body.item) {
+            items = sortItems(items.map((i) => (i.id === item.id ? prev : i)));
+            error = body.error || "Couldn't save that change.";
+            mount();
+            return;
+          }
+          items = sortItems(items.map((i) => (i.id === item.id ? body.item : i)));
+          error = "";
+          mount();
+        }
+
+        async function addItem(input) {
+          const text = input.value.replace(/\s+/g, " ").trim();
+          if (!text) return;
+          draft = "";
+          input.value = "";
+          const tempId = "tmp-" + crypto.randomUUID();
+          const now = new Date().toISOString();
+          items = sortItems([
+            ...items,
+            { id: tempId, text, status: "open", source: "user", statusSource: "user", botKey: null, createdAt: now, updatedAt: now },
+          ]);
+          mount();
+          const { res, body } = await api(ownerKey, "/api/checklist/", { method: "POST", body: JSON.stringify({ text }) });
+          if (!res.ok || !body.item) {
+            items = items.filter((i) => i.id !== tempId);
+            draft = text;
+            error = body.error || "Couldn't add that item.";
+            mount();
+            return;
+          }
+          items = sortItems(items.filter((i) => i.id !== tempId).concat(body.item));
+          error = "";
+          mount();
+        }
+
+        mount();
+        void refresh(false);
+        setInterval(() => document.visibilityState === "visible" && refresh(true), 8000);
+        window.addEventListener("focus", () => refresh(true));
+      }
+
+      const root = document.getElementById("root");
+      const saved = localStorage.getItem(OWNER_KEY);
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/checklist-sw.js", { scope: "/checklist/" }).catch(() => {});
+      }
+      if (saved) renderApp(root, saved);
+      else renderGate(root);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+<Files "config.php">
+  Require all denied
+</Files>
+
+RewriteEngine On
+RewriteBase /api/checklist/
+
+RewriteRule ^bot/([0-9a-f-]{36})/?$ bot_item.php?id=$1 [L,QSA]
+RewriteRule ^bot/?$ bot.php [L,QSA]
+RewriteRule ^([0-9a-f-]{36})/?$ item.php?id=$1 [L,QSA]
+RewriteRule ^$ index.php [L,QSA]
