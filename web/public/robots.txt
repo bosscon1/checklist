@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /internal/
+Disallow: /admin/
+Disallow: /login
+Disallow: /checklist/
+
+Sitemap: https://pfeiferbuild.com/sitemap.xml

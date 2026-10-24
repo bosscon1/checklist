@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-charcoal: #3a4048;
+  --color-charcoal-deep: #2c3138;
+  --color-ink: #1c1f24;
+  --color-paper: #ffffff;
+  --color-cream: #f4f0e6;
+  --color-muted: #5c6370;
+  --color-line: #d8d4cb;
+  --color-pfeifer: #004aad;
+  --color-pfeifer-dark: #003682;
+  --color-pfeifer-light: #e8eef7;
+  --color-danger: #8b1e1e;
+  --color-star: #e0b422;
+  --font-display: "Outfit", "Segoe UI", sans-serif;
+  --font-sans: "DM Sans", "Segoe UI", sans-serif;
+  --radius: 0.25rem;
+  --animate-review-marquee: review-marquee 70s linear infinite;
+}
+
+@keyframes review-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.review-mask {
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-mask {
+    mask-image: none;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-pfeifer);
+    outline-offset: 2px;
+  }
+}

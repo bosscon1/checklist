@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Pfeifer Building Company"
+description = "The Pfeifer Building Company website, imported from the existing GitHub repository as a homeowner-facing brochure site for remodeling, additions, decks, kitchens, baths, and commercial construction in Fayette and Coweta County."
+version = "1.0.0"
+id = "artifacts/pfeifer-website"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22501
+
+[services.development]
+run = "pnpm --filter @workspace/pfeifer-website run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pfeifer-website", "run", "build:static" ]
+serve = "static"
+publicDir = "artifacts/pfeifer-website/dist/client"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22501"
+BASE_PATH = "/"

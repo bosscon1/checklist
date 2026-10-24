@@ -1,0 +1,58 @@
+# Pfeifer Building Company — SiteGround Apache helpers
+# Keep WordPress until DNS / docroot cutover. Install this file at public_html root.
+
+RewriteEngine On
+
+# HTTPS (SiteGround usually handles this in the panel; keep as a fallback)
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Trailing slash for extensionless paths
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !(.*)/$
+RewriteCond %{REQUEST_URI} !\.[a-zA-Z0-9]{1,8}$
+RewriteRule ^(.*)$ /$1/ [L,R=301]
+
+# WordPress leftovers → live replacements
+Redirect 301 /index.php /
+Redirect 301 /home/ /
+Redirect 301 /company/ /about/
+Redirect 301 /get-in-touch/ /contact/
+Redirect 301 /start-here/ /get-started/
+Redirect 301 /services/ /category/services/
+Redirect 301 /decks/ /decks-by-pfeifer/
+Redirect 301 /deck/ /decks-by-pfeifer/
+Redirect 301 /kitchen/ /kitchens/
+Redirect 301 /kitchen-remodels/ /kitchens/
+Redirect 301 /bathrooms/ /bathroom-remodels/
+Redirect 301 /bathroom/ /bathroom-remodels/
+Redirect 301 /garages/ /detached-garages/
+Redirect 301 /garage/ /detached-garages/
+Redirect 301 /additions/ /home-addition-contractor/
+Redirect 301 /home-additions/ /home-addition-contractor/
+Redirect 301 /basements/ /basement-remodels/
+Redirect 301 /basement/ /basement-remodels/
+Redirect 301 /commercial/ /commercial-buildings/
+Redirect 301 /full-home-remodel/ /full-home-remodels/
+Redirect 301 /peachtree-city/ /peachtree-city-ga/
+Redirect 301 /tyrone/ /tyrone-ga/
+Redirect 301 /brooks/ /brooks-ga/
+Redirect 301 /newnan/ /newnan-ga/
+Redirect 301 /gallery/ /portfolio/
+Redirect 301 /our-work/ /portfolio/
+Redirect 301 /feed/ /blog/
+Redirect 301 /comments/feed/ /blog/
+Redirect 301 /porches/ /covered-porches-by-pfeifer/
+Redirect 301 /covered-porches/ /covered-porches-by-pfeifer/
+Redirect 301 /screen-porch/ /covered-porches-by-pfeifer/
+Redirect 301 /sunrooms/ /sunroom/
+Redirect 301 /outdoor-kitchens/ /outdoor-kitchen/
+Redirect 301 /fayetteville/ /fayetteville-ga/
+Redirect 301 /senoia/ /senoia-ga/
+
+RewriteRule ^author/ /about/ [R=301,L]
+RewriteRule ^tag/ /blog/ [R=301,L]
+RewriteRule ^category/blogposts/?$ /blog/ [R=301,L]
+RewriteRule ^wp-login\.php$ / [R=301,L]
+RewriteRule ^wp-admin / [R=301,L]
