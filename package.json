@@ -1,0 +1,8 @@
+{
+  "name": "checklist",
+  "private": true,
+  "description": "Checklist for brianselleck.com — SiteGround deploy uses deploy/siteground via npm run build",
+  "scripts": {
+    "build": "node scripts/siteground-build.mjs"
+  }
+}
