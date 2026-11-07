@@ -14,7 +14,7 @@ const out = join(root, "public");
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-for (const name of ["api", "checklist", "checklist-sw.js"]) {
+for (const name of ["api", "checklist", "checklist-sw.js", "privacy", "terms"]) {
   cpSync(join(src, name), join(out, name), { recursive: true });
 }
 

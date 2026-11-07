@@ -55,6 +55,9 @@
       .gate input { width: 100%; min-height: 4rem; border: 1px solid var(--line); border-radius: 0.25rem; padding: 0 1rem; margin-top: 0.5rem; }
       .gate label { font-weight: 600; display: block; margin-top: 1rem; }
       details summary { min-height: 3.5rem; padding: 0.75rem 0; font-weight: 600; cursor: pointer; }
+      .legal { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; padding: 0.25rem 1rem 0.25rem; }
+      .legal a { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--pfeifer); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+      .legal a:focus-visible { outline: 2px solid var(--pfeifer); outline-offset: 2px; }
     </style>
   </head>
   <body>
@@ -95,6 +98,19 @@
         return { res, body };
       }
 
+      function legalNav() {
+        return el(
+          "footer",
+          null,
+          el(
+            "nav",
+            { className: "legal", "aria-label": "Legal" },
+            el("a", { href: "/privacy/" }, "Privacy Policy"),
+            el("a", { href: "/terms/" }, "Terms of Service"),
+          ),
+        );
+      }
+
       function renderGate(root) {
         root.replaceChildren();
         const input = el("input", { type: "password", id: "key", autocomplete: "current-password" });
@@ -121,7 +137,7 @@
           err,
           el("button", { type: "submit", className: "primary", style: "width:100%;margin-top:1rem" }, "Open checklist"),
         );
-        root.append(form);
+        root.append(form, legalNav());
       }
 
       function renderApp(root, ownerKey) {
@@ -202,7 +218,7 @@
             el("button", { type: "submit", className: "primary", disabled: draft.trim() ? null : "" }, "Add"),
           );
 
-          root.append(header, scroll, addForm);
+          root.append(header, scroll, legalNav(), addForm);
         };
 
         function itemList(list, onStatus) {

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1c1f24" />
+    <title>Privacy Policy · Checklist</title>
+    <meta name="description" content="Draft privacy policy for the owner-key Checklist in this repository." />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" />
+    <style>
+      :root { --ink:#1c1f24; --cream:#f4f0e6; --paper:#fff; --muted:#5c6370; --line:#d8d4cb; --pfeifer:#004aad; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: "DM Sans", "Segoe UI", sans-serif; background: var(--cream); color: var(--ink); }
+      main { max-width: 36rem; margin: 0 auto; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1.5rem, env(safe-area-inset-bottom)); }
+      h1, h2 { font-family: "Outfit", "Segoe UI", sans-serif; letter-spacing: -0.03em; }
+      h1 { font-size: 2.25rem; margin: 0.5rem 0 0; }
+      h2 { font-size: 1.5rem; margin: 0; }
+      p, li { font-size: 1rem; line-height: 1.6; overflow-wrap: anywhere; }
+      .kicker { margin: 0; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); }
+      .effective { color: var(--muted); }
+      .note { margin-top: 1.5rem; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 0.25rem; background: var(--paper); }
+      article { margin-top: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+      ul { padding-left: 1.25rem; }
+      footer { margin-top: 2.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+      nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
+      a { color: var(--pfeifer); font-weight: 600; min-height: 2.75rem; display: inline-flex; align-items: center; }
+      a.back { color: var(--ink); }
+      a:focus-visible { outline: 2px solid var(--pfeifer); outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">Checklist</p>
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective November 7, 2026</p>
+      <aside class="note" role="note">These are drafts for legal review. They describe the Checklist in this source repository as of November 7, 2026: the shared list opened with an owner key, and the optional bot API. They are not legal advice, a certification, or a description of any other product that uses the name Checklist.</aside>
+      <article>
+        <section aria-labelledby="scope">
+        <h2 id="scope">What this page covers</h2>
+        <p>Checklist in this repository is one shared list. A person opens it by typing an owner key. There is no sign-up form, no profile, and no separate account for each person. A bot can also read and change the list when the operator has given that bot its own token.</p>
+<p>This page covers the checklist screens, the checklist API, and the bot tools shipped in this repository. It also covers the SiteGround package in this repository, which stores the same kind of list in MySQL. The operator's legal name, mailing address, and privacy contact are not in this repository, so this draft does not invent them.</p>
+      </section>
+<section aria-labelledby="information">
+        <h2 id="information">Information the checklist stores</h2>
+        <p>Each item can include the words on the line (up to 280 characters), a status of open, done, or dismissed, whether the item was added by a person or by the bot, who last changed the status, a bot key when a bot created the item (up to 80 characters, with no spaces), an id, and the time it was created and last updated.</p>
+<p>The owner key is saved in the browser under the localStorage name checklist-owner-key. The page sends that key on each request as a bearer token. Choosing Lock, or sending a key the server rejects, removes it from that browser. The server compares the key with the owner secret configured for that deployment. The secret is an environment or config value. It is not a row in the checklist table.</p>
+<p>The checklist screens do not ask for a name, email address, phone number, or date of birth.</p>
+      </section>
+<section aria-labelledby="bot">
+        <h2 id="bot">The bot</h2>
+        <p>If the operator sets a bot token, a program with that token can read every item, add items, change the wording of an open item, and mark an open item done. The bot API leaves a dismissed item dismissed. The bot tools in this repository can also keep a memory of bot keys, and a short snapshot of those items, in the bot host's key-value store under the name checklist:added.</p>
+<p>The checklist server does not, by itself, call out to an AI vendor. The bot reaches in with the token. What the bot host keeps, and which company runs that bot, depends on how the operator installs it. This repository does not record that choice for a live deployment.</p>
+      </section>
+<section aria-labelledby="storage">
+        <h2 id="storage">Where items are stored</h2>
+        <p>In the Node application, items go to Postgres when DATABASE_URL is set. Comments in the code mention Neon as one kind of Postgres host. This repository does not show the host, region, or vendor used by any live deployment. When DATABASE_URL is unset, the Node application stores items in an embedded database on the machine that is running the app.</p>
+<p>The SiteGround package stores items in MySQL. The host, port, database name, and passwords come from a config file on that server. The sample config uses localhost. The sample describes the sample file, and it does not identify a live server.</p>
+<p>This repository does not show which of those copies, if either, is the one a particular person is using.</p>
+      </section>
+<section aria-labelledby="retention">
+        <h2 id="retention">How long items stay</h2>
+        <p>Nothing in this code deletes items on a timer. Marking an item dismissed keeps the row. Restore brings it back. There is no control on the page that erases the list, the server-side owner secret, or the database. How long a host keeps backups, logs, or copies is not written down in this repository.</p>
+      </section>
+<section aria-labelledby="cookies">
+        <h2 id="cookies">Cookies, fonts, and connection records</h2>
+        <p>The checklist screens do not set their own cookie, and they do not load an analytics or advertising script. They do load font files from fonts.googleapis.com and fonts.gstatic.com, so the browser contacts Google for those files. A service worker is registered for /checklist/. It does not keep a copy of the list. API requests stay on the network.</p>
+<p>A hosting company, database host, font host, or network in front of the site can still record that a browser connected, which can include an IP address and a user agent. This draft does not claim those records are absent, and it does not say where they are kept or how long they last. A review of this source code cannot answer that.</p>
+      </section>
+<section aria-labelledby="sharing">
+        <h2 id="sharing">Who can receive the list</h2>
+        <p>Anyone with the owner key can read and change the whole list. Anyone with the bot token can use the bot API. The database and the server that run the list receive the item text because that is how the list is saved. A connected bot receives item text when it calls the API.</p>
+<p>The checklist code has no feature for selling item text and no feature for sending it to an advertising network. That is a statement about this source code. It is not a finding about every host, database vendor, font host, or bot the operator might connect, and it is not a promise that those parties refrain from using connection data for their own purposes.</p>
+      </section>
+<section aria-labelledby="security">
+        <h2 id="security">Security</h2>
+        <p>The server checks the owner key and the bot token by comparing hashes in a timing-safe way. The owner key sits in localStorage, so script that runs on this site's origin can read it. This repository does not describe encryption at rest, a security certification, or a guarantee against loss, interception, or access by someone who has the key, the token, the database, or the server.</p>
+      </section>
+<section aria-labelledby="choices">
+        <h2 id="choices">Your choices and how to ask</h2>
+        <p>With the owner key, you can add items and change their status, including dismiss and restore. The page does not offer a file download of the list, and it does not offer a way to erase the stored rows. Lock removes the key from that browser only.</p>
+<p>This repository does not publish a privacy email, phone number, or mailing address for the checklist operator. An email address and a street address for Pfeifer Building Company appear in older website files that stayed in the repository after the checklist was split out of that site. This draft does not treat that company, or that address, as the checklist operator or the checklist contact. A request to see, correct, or delete stored items has to go to the person who runs the copy you use, through a contact they have already given you.</p>
+<p>If a privacy law gives you a right to access, correct, or delete information, this app does not include a tool that performs that request. Whether a particular law applies depends on who operates the deployment and where the people and the servers are. Those facts are not in this repository.</p>
+      </section>
+<section aria-labelledby="children">
+        <h2 id="children">Children</h2>
+        <p>The checklist does not ask for age and does not check age. It is written as a personal list for whoever holds the owner key. It is not presented as a product for children.</p>
+      </section>
+<section aria-labelledby="changes">
+        <h2 id="changes">Changes to this draft</h2>
+        <p>The effective date on this page is November 7, 2026. If the words change, the date on the page should change with them. The code does not send an email or other notice when the page changes.</p>
+      </section>
+      </article>
+      <footer>
+        <nav aria-label="Legal">
+          <a href="/privacy/" aria-current="page">Privacy Policy</a>
+          <a href="/terms/">Terms of Service</a>
+        </nav>
+        <p><a class="back" href="/checklist/">Back to Checklist</a></p>
+        <p class="effective">Terms of Service is also at <a href="/terms/">/terms/</a>.</p>
+      </footer>
+    </main>
+  </body>
+</html>

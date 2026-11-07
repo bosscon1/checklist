@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChecklistIndexRouteImport } from './routes/checklist/index'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ApiChecklistIndexRouteImport } from './routes/api/checklist/index'
 import { Route as ApiChecklistIdIndexRouteImport } from './routes/api/checklist/$id/index'
 import { Route as ApiChecklistBotIndexRouteImport } from './routes/api/checklist/bot/index'
@@ -24,6 +26,16 @@ const IndexRoute = IndexRouteImport.update({
 const ChecklistIndexRoute = ChecklistIndexRouteImport.update({
   id: '/checklist/',
   path: '/checklist/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChecklistIndexRoute = ApiChecklistIndexRouteImport.update({
@@ -50,6 +62,8 @@ const ApiChecklistBotIdIndexRoute = ApiChecklistBotIdIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checklist/': typeof ChecklistIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/api/checklist/': typeof ApiChecklistIndexRoute
   '/api/checklist/$id/': typeof ApiChecklistIdIndexRoute
   '/api/checklist/bot/': typeof ApiChecklistBotIndexRoute
@@ -58,6 +72,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checklist': typeof ChecklistIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/api/checklist': typeof ApiChecklistIndexRoute
   '/api/checklist/$id': typeof ApiChecklistIdIndexRoute
   '/api/checklist/bot': typeof ApiChecklistBotIndexRoute
@@ -67,6 +83,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/checklist/': typeof ChecklistIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/api/checklist/': typeof ApiChecklistIndexRoute
   '/api/checklist/$id/': typeof ApiChecklistIdIndexRoute
   '/api/checklist/bot/': typeof ApiChecklistBotIndexRoute
@@ -77,6 +95,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/checklist/'
+    | '/privacy/'
+    | '/terms/'
     | '/api/checklist/'
     | '/api/checklist/$id/'
     | '/api/checklist/bot/'
@@ -85,6 +105,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/checklist'
+    | '/privacy'
+    | '/terms'
     | '/api/checklist'
     | '/api/checklist/$id'
     | '/api/checklist/bot'
@@ -93,6 +115,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/checklist/'
+    | '/privacy/'
+    | '/terms/'
     | '/api/checklist/'
     | '/api/checklist/$id/'
     | '/api/checklist/bot/'
@@ -102,6 +126,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChecklistIndexRoute: typeof ChecklistIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
   ApiChecklistIndexRoute: typeof ApiChecklistIndexRoute
   ApiChecklistIdIndexRoute: typeof ApiChecklistIdIndexRoute
   ApiChecklistBotIndexRoute: typeof ApiChecklistBotIndexRoute
@@ -122,6 +148,20 @@ declare module '@tanstack/react-router' {
       path: '/checklist'
       fullPath: '/checklist/'
       preLoaderRoute: typeof ChecklistIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy/'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof TermsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checklist/': {
@@ -158,6 +198,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChecklistIndexRoute: ChecklistIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
   ApiChecklistIndexRoute: ApiChecklistIndexRoute,
   ApiChecklistIdIndexRoute: ApiChecklistIdIndexRoute,
   ApiChecklistBotIndexRoute: ApiChecklistBotIndexRoute,
