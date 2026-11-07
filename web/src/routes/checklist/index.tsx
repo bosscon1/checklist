@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  sortChecklistItems,
-  type ChecklistItem,
-  type ChecklistStatus,
-} from "@/lib/checklist";
+import { LegalFooter } from "@/components/legal-nav";
+import { sortChecklistItems, type ChecklistItem, type ChecklistStatus } from "@/lib/checklist";
 
 const OWNER_KEY = "checklist-owner-key";
 
@@ -16,7 +13,10 @@ export const Route = createFileRoute("/checklist/")({
       { name: "theme-color", content: "#1c1f24" },
       { name: "apple-mobile-web-app-title", content: "Checklist" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black" },
-      { name: "description", content: "A personal checklist you can check, dismiss, and add to from your phone." },
+      {
+        name: "description",
+        content: "A personal checklist you can check, dismiss, and add to from your phone.",
+      },
     ],
     links: [
       { rel: "manifest", href: "/checklist/manifest.webmanifest" },
@@ -39,7 +39,9 @@ function ChecklistPage() {
     setOwnerKey(window.localStorage.getItem(OWNER_KEY));
     setReady(true);
     if ("serviceWorker" in navigator) {
-      void navigator.serviceWorker.register("/checklist-sw.js", { scope: "/checklist/" }).catch(() => {});
+      void navigator.serviceWorker
+        .register("/checklist-sw.js", { scope: "/checklist/" })
+        .catch(() => {});
     }
   }, []);
 
@@ -78,6 +80,7 @@ function Frame({ title, children }: { title: string; children?: ReactNode }) {
         <h1 className="font-display text-3xl">{title}</h1>
       </header>
       <div className="flex-1 px-4">{children}</div>
+      <LegalFooter edge />
     </main>
   );
 }
@@ -100,7 +103,8 @@ function KeyGate({ onSave }: { onSave: (key: string) => void }) {
     <Frame title="Checklist">
       <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
         <p className="text-lg text-muted">
-          Enter the owner key once. It stays on this phone, and every tap saves straight to your list.
+          Enter the owner key once. It stays on this phone, and every tap saves straight to your
+          list.
         </p>
         <label className="flex flex-col gap-2 text-base font-semibold" htmlFor="checklist-key">
           Owner key
@@ -121,7 +125,10 @@ function KeyGate({ onSave }: { onSave: (key: string) => void }) {
             {error}
           </p>
         ) : null}
-        <button type="submit" className="min-h-16 rounded bg-pfeifer px-4 text-lg font-semibold text-paper">
+        <button
+          type="submit"
+          className="min-h-16 rounded bg-pfeifer px-4 text-lg font-semibold text-paper"
+        >
           Open checklist
         </button>
       </form>
@@ -173,7 +180,10 @@ function ChecklistApp({
       const response = await fetch("/api/checklist/", {
         headers: { authorization: `Bearer ${ownerKey}` },
       });
-      const body = (await response.json().catch(() => ({}))) as { items?: ChecklistItem[]; error?: string };
+      const body = (await response.json().catch(() => ({}))) as {
+        items?: ChecklistItem[];
+        error?: string;
+      };
       if (cancelled) return;
       if (response.status === 401) {
         onUnauthorized();
@@ -211,7 +221,10 @@ function ChecklistApp({
     };
   }, [onUnauthorized, ownerKey]);
 
-  async function send(path: string, init: RequestInit): Promise<{ ok: true; item: ChecklistItem } | { ok: false; status: number; error: string }> {
+  async function send(
+    path: string,
+    init: RequestInit,
+  ): Promise<{ ok: true; item: ChecklistItem } | { ok: false; status: number; error: string }> {
     const response = await fetch(path, {
       ...init,
       headers: {
@@ -220,13 +233,20 @@ function ChecklistApp({
         ...(init.headers ?? {}),
       },
     });
-    const body = (await response.json().catch(() => ({}))) as { item?: ChecklistItem; error?: string };
+    const body = (await response.json().catch(() => ({}))) as {
+      item?: ChecklistItem;
+      error?: string;
+    };
     if (response.status === 401) {
       onUnauthorized();
       return { ok: false, status: 401, error: "That key doesn't match." };
     }
     if (!response.ok || !body.item) {
-      return { ok: false, status: response.status, error: body.error || "Couldn't save that change." };
+      return {
+        ok: false,
+        status: response.status,
+        error: body.error || "Couldn't save that change.",
+      };
     }
     return { ok: true, item: body.item };
   }
@@ -240,7 +260,12 @@ function ChecklistApp({
 
   async function setStatus(item: ChecklistItem, status: ChecklistStatus) {
     const previous = itemsRef.current.find((row) => row.id === item.id) ?? item;
-    const optimistic = { ...previous, status, statusSource: "user" as const, updatedAt: new Date().toISOString() };
+    const optimistic = {
+      ...previous,
+      status,
+      statusSource: "user" as const,
+      updatedAt: new Date().toISOString(),
+    };
     replace(item.id, optimistic);
     inflight.current.add(item.id);
     const result = await send(`/api/checklist/${encodeURIComponent(item.id)}/`, {
@@ -303,22 +328,33 @@ function ChecklistApp({
           <h1 className="font-display text-3xl">Checklist</h1>
           <p className="mt-1 text-base text-muted">{loaded ? `${open.length} open` : "Loading"}</p>
         </div>
-        <button type="button" onClick={onLock} className="min-h-14 px-2 text-base font-semibold text-muted">
+        <button
+          type="button"
+          onClick={onLock}
+          className="min-h-14 px-2 text-base font-semibold text-muted"
+        >
           Lock
         </button>
       </header>
 
       {error ? (
-        <p className="mx-4 mt-3 rounded border border-danger px-3 py-3 text-base text-danger" role="alert">
+        <p
+          className="mx-4 mt-3 rounded border border-danger px-3 py-3 text-base text-danger"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
-      {!standalone ? <InstallHint ios={ios} install={install} onInstalled={() => setInstall(null)} /> : null}
+      {!standalone ? (
+        <InstallHint ios={ios} install={install} onInstalled={() => setInstall(null)} />
+      ) : null}
 
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         {loaded && open.length === 0 ? (
-          <p className="mt-6 text-lg text-muted">Nothing open. Add one below, or wait for your bot.</p>
+          <p className="mt-6 text-lg text-muted">
+            Nothing open. Add one below, or wait for your bot.
+          </p>
         ) : null}
         <ItemList items={open} onStatus={setStatus} />
         {done.length > 0 ? (
@@ -349,6 +385,8 @@ function ChecklistApp({
           </details>
         ) : null}
       </div>
+
+      <LegalFooter />
 
       <form
         onSubmit={(event) => void addItem(event)}
@@ -408,7 +446,9 @@ function ItemList({
               onClick={() => onStatus(item, done ? "open" : "done")}
               className="min-h-16 flex-1 px-1 text-left"
             >
-              <span className={`block text-lg ${done ? "text-muted line-through" : ""}`}>{item.text}</span>
+              <span className={`block text-lg ${done ? "text-muted line-through" : ""}`}>
+                {item.text}
+              </span>
               {item.source === "bot" ? (
                 <span className="mt-1 block text-sm text-muted">
                   {done && item.statusSource === "bot" ? "Checked by your bot" : "From your bot"}
@@ -446,7 +486,10 @@ function InstallHint({
           type="button"
           className="mt-3 min-h-14 w-full rounded bg-ink text-base font-semibold text-paper"
           onClick={() => {
-            void install.prompt().then(() => install.userChoice).then(onInstalled);
+            void install
+              .prompt()
+              .then(() => install.userChoice)
+              .then(onInstalled);
           }}
         >
           Add to Home Screen
